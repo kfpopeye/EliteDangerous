@@ -476,7 +476,7 @@ class ArchitectTrackerGUI(tk.Toplevel):
             tags = [row_tag]
 
             if globals.SHIP_STATE == globals.SHIP_MODE.DockedAtMarket:
-                for_sale = helpers.is_market_selling(mat)
+                for_sale = helpers.is_mat_in_stock(mat)
                 if for_sale and short > 0:
                     tags.append('highlightedrow')
             elif globals.SHIP_STATE == globals.SHIP_MODE.DockedAtFC:
