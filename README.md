@@ -91,3 +91,4 @@ https://forums.frontier.co.uk/threads/colonization-tool-architect-tracker.636854
 + 2026/04/04 : [Version 1.5] Changed highlight rules when on fleet carrier. Now, if you have enough of a commodity on your starship to meet the needs of the construction site, the commodity will no longer be highlighted.
 + 2026/06/11 : [Version 1.6] Major bug fixes for Linux users. Special thanks to Commanders PatientNr0, mgrzegor, Fasgort and LiamtheLion879
  for taking time to report bugs and work with me to fix them. Added log viewer to settings tab which should helppeople report bugs.
++ 2026/09/08 : [Version 1.7] Commodities are now tracked even if not needed at a construction site or sold out at market, added more logging information, corrected logic error, corrected pricing error.
