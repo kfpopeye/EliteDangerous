@@ -294,16 +294,19 @@ def on_log_open():
             # --- Flatpak / sandboxed environment ---
             if helpers.is_flatpak():
                 logger.info("Detected Flatpak sandbox environment")
-
+                noOpener = True
                 # Prefer portal-aware tool
                 for cmd in (["gio", "open", globals.USER_DIR], ["xdg-open", globals.USER_DIR]):
                     try:
                         subprocess.Popen(cmd)
                         logger.info("Opened folder via sandbox method: %s", cmd[0])
+                        noOpener = False
+                        break
                     except Exception as e:
                         logger.warning("Failed sandbox open with %s: %s", cmd[0], repr(e))
 
-                logger.error("No sandbox-compatible opener found.")
+                if noOpener:
+                    logger.error("No sandbox-compatible opener found.")
 
             # --- Native Linux ---
             else:
