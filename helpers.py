@@ -258,10 +258,6 @@ def isItemBelowConstructionCost(item_name, item_price) -> bool:
                 if price is not None:
                     prices.append(price)
 
-    if not prices:
-        logger.info("Item '%s' is not needed by any site", item_name)
-        return False
-
     in_demand = all(item_price < price for price in prices)
     if in_demand:
         logger.info("Item '%s' is in demand (price: %s < all site prices: %s)", item_name, item_price, prices)
@@ -337,9 +333,9 @@ def update_market_library() -> None:
             not_selling_list = list(COMMODITIES)
 
         for item in items:
-            if item.get("Stock", 0) > 0:  # Item is for sale
+            if item.get("BuyPrice", 0) > 0:  # Item is sold here but may be out of stock
                 item_name = item.get("Name")
-                m_price = item.get("SellPrice")
+                m_price = item.get("BuyPrice")
 
                 if item_name and isItemConstructionCommodity(item_name):
                     not_selling_list.remove(item_name)
@@ -605,7 +601,7 @@ def get_prefMarket_name(material):
 
     return "Error"
 
-def is_market_selling(material) -> bool:
+def is_mat_in_stock(material) -> bool:
     # Load market data from EDMC
     with open(globals.MARKET_JSON, "r", encoding="utf-8") as f:
         market = json.load(f)
