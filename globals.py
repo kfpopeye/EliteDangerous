@@ -79,8 +79,8 @@ COMMODITY_FILE = "commodity_list.txt"
 #files created by EDMC
 if ED_SAVE_PATH and os.path.exists(ED_SAVE_PATH):
     MARKET_JSON = os.path.join(ED_SAVE_PATH, 'Market.json')
-    CARGO_JSON = os.path.join(ED_SAVE_PATH, 'Cargo.json')
-    
+    CARGO_JSON = os.path.join(ED_SAVE_PATH, 'Cargo.json')    
+  
 logger = logging.getLogger("ArchitectTracker")
 logger.setLevel(logging.INFO)
 
