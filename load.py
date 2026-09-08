@@ -1,4 +1,4 @@
-__version__ = "1.6"
+__version__ = "1.7"
 
 """
 Displays commodities required, provided and needed when you land at a construction site,
@@ -37,7 +37,7 @@ import helpers
 
 globals.ARCHITECT_TRACKER_VER = __version__
 
-def plugin_start3(plugin_dir):
+def plugin_start3(plugin_dir):    
     try:
         logger.info("Starting Architect Tracker plugin (%s)", globals.ARCHITECT_TRACKER_VER)
 
@@ -126,7 +126,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             globals.CURRENT_LOCATION = tuple(entry["StarPos"])
             logger.info("Set current location to: %s", globals.CURRENT_LOCATION)
 
-        if not globals.ARCHITECT_GUI and not globals.ARCHITECT_GUI.winfo_exists():
+        if not globals.ARCHITECT_GUI or not globals.ARCHITECT_GUI.winfo_exists():
+            logger.info("Tracking is off.")
             return
 
         if globals.SHIP_STATE == globals.SHIP_MODE.Unknown:
@@ -175,6 +176,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         elif event == "MarketBuy":
             if globals.CARRIER_TRACKER and station == globals.CARRIER_TRACKER.callsign:
                 globals.CARRIER_TRACKER.apply_market_purchase(entry)
+            else: 
+                name = entry.get("Type").capitalize()
+                qty = entry.get("Count", 0)
+                logger.info("Puchased: %s x %s from %s", name, qty, station)
 
         elif event == "CargoTransfer":
             transfers = entry.get("Transfers", [])
