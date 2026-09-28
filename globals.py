@@ -35,6 +35,7 @@ class STATION_TYPE(Enum):
     Orbital = 1
     Surface = 2
 DOCKED_STATION_TYPE = STATION_TYPE.Unknown
+UPDATE_AVAILABLE = False
 
 def find_proton_saved_games():
     from config import config
@@ -61,7 +62,10 @@ elif platform.system() == "Darwin":
     USER_DIR = os.path.join(os.path.expanduser("~/Library/Application Support"), "ArchitectTracker")
     ED_SAVE_PATH = os.path.join(os.getenv('USERPROFILE', os.path.expanduser('~')), 'Saved Games', 'Frontier Developments', 'Elite Dangerous')
 else:
-    USER_DIR = os.path.join(os.path.expanduser("~"), ".config", "ArchitectTracker")
+    if os.path.exists("/.flatpak-info") or "FLATPAK_SANDBOX_DIR" in os.environ or os.environ.get("FLATPAK_ID") is not None:
+       USER_DIR = os.path.join(os.path.expanduser("~"), ".var", "app", "io.edcd.EDMarketConnector", "data", "ArchitectTracker")
+    else:
+       USER_DIR = os.path.join(os.path.expanduser("~"), ".config", "ArchitectTracker")
     ED_SAVE_PATH = find_proton_saved_games()
 
 try:
