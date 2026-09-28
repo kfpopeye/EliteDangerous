@@ -11,12 +11,13 @@ from config import appname, appversion, config
 import globals
 from globals import logger
 import helpers
+from tooltip import Tooltip
 
 # --- Settings Hooks ---
 def pluginprefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> nb.Frame | None:
     column_display_vars = {}
 
-    column_visibility, hide_provided, theme, column_display, trans_bg, win_top, opac_amount = helpers.load_gui_settings() #globals.SHOW_UI_AT_START is set in plugin_start3()
+    column_visibility, hide_provided, theme, column_display, trans_bg, win_top, opac_amount, slim_mode = helpers.load_gui_settings() #globals.SHOW_UI_AT_START is set in plugin_start3()
 
     if config.get('ArchTrack_fcapimode') is None:
         fcapi_mode = "First then pause"
@@ -38,7 +39,7 @@ def pluginprefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> nb.Frame | Non
     pref_frame = nb.Frame(parent)
     title_frame = nb.Frame(pref_frame, border=0)
     title_frame.grid(row=0, column=1, columnspan=2)
-    nb.Label(title_frame, text="Architect Tracker (" + globals.ARCHITECT_TRACKER_VER + ") plugin by CMDR kfpopeye.").grid(row=0, column=1, sticky="nsew")
+    nb.Label(title_frame, text=f"Architect Tracker ({globals.ARCHITECT_TRACKER_VER}) plugin by CMDR kfpopeye.").grid(row=0, column=1, sticky="nsew")
     nb.Button(title_frame, text="Open website", command=open_url).grid(row=0, column=2, sticky="w")
 
     upper_row = nb.Frame(pref_frame, border=0)
@@ -70,12 +71,14 @@ def pluginprefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> nb.Frame | Non
                 command=lambda c=col, v=var: toggle_column(c, v.get())
             )
         chk.grid(row=g_row, column=0, sticky="nsew")
+        Tooltip(chk, f"Uncheck to not display the {col} column.")
 
         display_var = tk.StringVar(value=column_display[idx])
         column_display_vars[col] = display_var
         c_name = tk.Entry(col_frame, textvariable=display_var)
         c_name.bind("<KeyRelease>", lambda e, c=col, v=display_var: on_column_rename(c, v.get()))
         c_name.grid(row=g_row, column=1, sticky="nsew")
+        Tooltip(c_name, f"Edit to rename the {col} column header.")
 
         nb.Label(col_frame, text=column_description[col]).grid(row=g_row, column=2, sticky="w", padx=5)
         g_row = g_row + 1
@@ -121,7 +124,9 @@ def pluginprefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> nb.Frame | Non
         text="Remove delivered from lists",
         variable=hide_var,
         command=lambda val=hide_var: toggle_hide_provided(val.get())
-    ).grid(row=g_row, sticky="nw", padx=5, pady=5)
+    )
+    chk_hide.grid(row=g_row, sticky="nw", padx=5, pady=5)
+    Tooltip(chk_hide, "Do not display materials when \"needed\" equals 0.")
     g_row = g_row +1
 
     #select UI colours
@@ -196,7 +201,21 @@ def pluginprefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> nb.Frame | Non
         text="Show UI at EDMC startup",
         variable=show_var,
         command=lambda v=show_var: toggle_showUIatStart(v.get())
-    ).grid(row=g_row, sticky="nw", padx=5, pady=5)
+    )
+    chk_hide.grid(row=g_row, sticky="nw", padx=5, pady=5)
+    Tooltip(chk_hide, "Show architect tracker when EDMC starts up.")
+    g_row = g_row +1
+
+    #use slim mode
+    use_slimmode = tk.BooleanVar(value=slim_mode)
+    chk_slimmode = nb.Checkbutton(
+        but_frame,
+        text="Use slim mode",
+        variable=use_slimmode,
+        command=lambda v=use_slimmode: toggle_slimMode(v.get())
+    )
+    chk_slimmode.grid(row=g_row, sticky="nw", padx=5, pady=5)
+    Tooltip(chk_slimmode, "Display top row buttons as vertical list.")
     g_row = g_row +1
 
     #Open Log Directory
@@ -359,7 +378,13 @@ def on_delete_markets():
         logger.error("Delete market Data error: %s", e)
 
 def toggle_showUIatStart(b):
+    #saved in helper.py
     globals.SHOW_UI_AT_START = b
-
+    
+def toggle_slimMode(b):
+    config.set('ArchTrack_slim', bool(b))
+    if globals.ARCHITECT_GUI and globals.ARCHITECT_GUI.winfo_exists():
+        globals.ARCHITECT_GUI.rebuild()
+    
 def change_fcapi_mode(mode):
     config.set('ArchTrack_fcapimode', mode)
