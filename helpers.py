@@ -67,13 +67,20 @@ def load_gui_settings():
         else:
             opac_amt = config.get_int('ArchTrack_opcamt')
 
-        return vis, hid, theme, col_display, trans_bg, win_top, opac_amt
+        if config.get('ArchTrack_slim') is None:
+            slim_mode = False
+            logger.info(f"slim_mode not found using default settings.")
+        else:
+            slim_mode = config.get_bool('ArchTrack_slim')
+
+        return vis, hid, theme, col_display, trans_bg, win_top, opac_amt, slim_mode
     except Exception as e:
         logger.error(f"Error loading GUI settings: {e}")
         return globals.DEFAULT_COLUMNS, False, "Dark Mode", cols
 
 def save_gui_settings():
     logger.info(f"Saving settings.")
+    config.set('ArchTrack_showUI', bool(globals.SHOW_UI_AT_START))    
     if not globals.ARCHITECT_GUI or not globals.ARCHITECT_GUI.winfo_exists():
         return
     try:
@@ -82,11 +89,11 @@ def save_gui_settings():
             config.set(c, vis)
         config.set('ArchTrack_hide_Provided', bool(globals.ARCHITECT_GUI.hide_provided))
         config.set('ArchTrack_theme', str(globals.ARCHITECT_GUI.theme))
-        config.set('ArchTrack_showUI', bool(globals.SHOW_UI_AT_START))
         config.set('ArchTrack_cols', list(globals.ARCHITECT_GUI.column_names))
         config.set('ArchTrack_tbg', bool(globals.ARCHITECT_GUI.trans_bg))
         config.set('ArchTrack_wintop', bool(globals.ARCHITECT_GUI.win_top))
         config.set('ArchTrack_opcamt', int(globals.ARCHITECT_GUI.opac_amount))
+        #saved in preferences.py - ArchTrack_slim
     except Exception as e:
         logger.error(f"Error saving GUI settings: {e}")
 
