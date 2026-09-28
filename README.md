@@ -12,7 +12,11 @@ Dark mode
 
 Light Mode
 
-<img width="1121" height="813" alt="Screenshot 2026-06-11 194230" src="https://github.com/user-attachments/assets/8783bce0-6144-40a3-9726-ae3f78b6388b" />
+<img width="527" height="660" alt="Screenshot 2026-09-27 183652" src="https://github.com/user-attachments/assets/7c8aa66f-8168-4af8-96ee-b34013315748" />
+
+Slim Mode
+
+<img width="1121" height="850" alt="Screenshot 2026-09-27 183358" src="https://github.com/user-attachments/assets/55c95a43-df51-4279-bfbf-3be0172c7d81" />
 
 Settings Window
 
@@ -92,3 +96,4 @@ https://forums.frontier.co.uk/threads/colonization-tool-architect-tracker.636854
 + 2026/06/11 : [Version 1.6] Major bug fixes for Linux users. Special thanks to Commanders PatientNr0, mgrzegor, Fasgort and LiamtheLion879
  for taking time to report bugs and work with me to fix them. Added log viewer to settings tab which should helppeople report bugs.
 + 2026/09/08 : [Version 1.7] Commodities are now tracked even if not needed at a construction site or sold out at market, added more logging information, corrected logic error, corrected pricing error.
++ 2026/09/27 : [Version 1.8] Added update notification, revised linux user directory, added slim mode AND bugs fixed
