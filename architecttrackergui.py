@@ -23,10 +23,16 @@ class ArchitectTrackerGUI(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Architect Tracker")
-        self.geometry("800x600")
+        
+        geometry = config.get("ArchTrack_geometry", "")
+        if geometry:
+            self.geometry(geometry)
+        else:
+            self.geometry("800x600")
+            
         self.configure(bg=self.bgBlack)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.column_visibility, self.hide_provided, self.theme, self.column_names, self.trans_bg, self.win_top, self.opac_amount = helpers.load_gui_settings()
+        self.column_visibility, self.hide_provided, self.theme, self.column_names, self.trans_bg, self.win_top, self.opac_amount, self.slim_mode = helpers.load_gui_settings()
 
         self.setAlpha(self.opac_amount)
         self.setStayOnTop(self.win_top)
@@ -38,6 +44,12 @@ class ArchitectTrackerGUI(tk.Toplevel):
         else:
             self._build_widgets()
             self.refresh()
+            
+    def rebuild(self):
+        self.clear_frame()        
+        self.column_visibility, self.hide_provided, self.theme, self.column_names, self.trans_bg, self.win_top, self.opac_amount, self.slim_mode = helpers.load_gui_settings()
+        self._build_widgets()
+        self.refresh()
 
     def setStayOnTop(self, val):
         self.win_top = val
@@ -162,6 +174,8 @@ class ArchitectTrackerGUI(tk.Toplevel):
                                     rowheight=24,
                                     selectbackground=ArchitectTrackerGUI.bgBlack)
             self.style.configure("ArchTrack.TCombobox",
+                                    font=("Arial", 14),
+                                    padding=(8, 3),
                                     background=ArchitectTrackerGUI.bgBlack,
                                     foreground=ArchitectTrackerGUI.edOrange,
                                     selectbackground=ArchitectTrackerGUI.bgBlack,
@@ -199,9 +213,9 @@ class ArchitectTrackerGUI(tk.Toplevel):
         frame = ttk.Frame(self, padding=8, style="ArchTrack.TFrame")
         frame.pack(fill=tk.BOTH, expand=True)
 
-        # Top controls (row 0)
-        dropframe = ttk.Frame(frame, padding=8, style="ArchTrack.TFrame")
-        dropframe.grid(row=0, column=0, sticky="nsew", padx=(0, 2))
+        # controls setup
+        dropframe = ttk.Frame(frame, padding=0, style="ArchTrack.TFrame")
+        dropframe.grid(row=0, column=0, sticky="nsew", padx=(0, 2), pady=(0, 2))
 
         self.deleteStation = ttk.Button(dropframe, text="X", style="ArchTrack.TButton", width=1, command=self.on_delete_station)
         self.deleteStation.grid(row=0, column=0, sticky="w")
@@ -222,26 +236,31 @@ class ArchitectTrackerGUI(tk.Toplevel):
         Tooltip(self.changeStation, "Change to the next site.")
 
         marketframe = ttk.Frame(frame, padding=0, style="ArchTrack.TFrame")
-        marketframe.grid(row=0, column=3, sticky="nsew", padx=(0, 2), pady=(0))
+        if self.slim_mode:
+            marketframe.grid(row=1, column=0, sticky="nsew", padx=(0, 2), pady=(0))
+        else:
+            marketframe.grid(row=0, column=3, sticky="nsew", padx=(0, 2), pady=(0))
 
         self.togglePrefStation = ttk.Button(marketframe, text="$\\Ly\\Alt", style="ArchTrack.TButton", width=8, command=self.on_toggle_prefMarket)
-        self.togglePrefStation.grid(row=0, column=0, sticky="w")
+        self.togglePrefStation.grid(row=0, column=0, sticky="nw")
         Tooltip(self.togglePrefStation, "Switch between closest, cheapest\nand alternate markets.")
 
         self.toggleTypeStation = ttk.Button(marketframe, text="O\\S", style="ArchTrack.TButton", width=3, command=self.on_toggle_prefType)
-        self.toggleTypeStation.grid(row=0, column=1, sticky="w")
+        self.toggleTypeStation.grid(row=0, column=1, sticky="nw")
         Tooltip(self.toggleTypeStation, "Prefer orbital or surface markets.")
         
         labelframe = ttk.Frame(marketframe)
-        labelframe.grid(row=0, column=2, sticky="w")
+        labelframe.grid(row=0, column=2, sticky="nw")
 
-        ttk.Label(labelframe, text="Preferred Market:", style="ArchTrack.TLabel", padding=0).pack(anchor="w", fill='x')
         self.market_name_label = ttk.Label(labelframe, text="", style="ArchTrack.TLabel", padding=0)
         self.market_name_label['text'] = "Holding text"
         self.market_name_label.pack(anchor="w", fill='x')
 
-        carrierframe = ttk.Frame(frame, padding=8, style="ArchTrack.TFrame")
-        carrierframe.grid(row=0, column=5, sticky="nsew", padx=(0, 2))
+        carrierframe = ttk.Frame(frame, padding=0, style="ArchTrack.TFrame")
+        if self.slim_mode:
+            carrierframe.grid(row=2, column=0, sticky="nsew", padx=(0, 2))
+        else:
+            carrierframe.grid(row=0, column=5, sticky="nsew", padx=(0, 2))
 
         self.canvas = tk.Canvas(carrierframe, width=25, height=25)
         self.canvas.grid(row=0, column=0, sticky="w")
@@ -251,7 +270,7 @@ class ArchitectTrackerGUI(tk.Toplevel):
         self.carrier_label = ttk.Label(carrierframe, text="", style="ArchTrack.TLabel")
         self.carrier_label.grid(row=0, column=2, sticky="w")
 
-        # Treeview setup (row 1)
+        # Treeview setup
         cols = list(globals.DEFAULT_COLUMNS.keys())
         self.tree = ttk.Treeview(frame, columns=cols, show="headings", style="ArchTrack.Treeview")
         for idx, c in enumerate(cols):
@@ -260,8 +279,13 @@ class ArchitectTrackerGUI(tk.Toplevel):
 
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree.yview, style="ArchTrack.Vertical.TScrollbar")
         self.tree.configure(yscrollcommand=scrollbar.set)
-        self.tree.grid(row=1, column=0, columnspan=7, sticky="nsew")
-        scrollbar.grid(row=1, column=7, sticky="ns")
+        if self.slim_mode:
+            self.tree.grid(row=3, column=0, columnspan=7, sticky="nsew")
+            scrollbar.grid(row=3, column=7, sticky="ns")
+        else:
+            self.tree.grid(row=1, column=0, columnspan=7, sticky="nsew")
+            scrollbar.grid(row=1, column=7, sticky="ns")
+
 
         # Make row 1 expandable
         frame.rowconfigure(1, weight=1)
@@ -390,13 +414,13 @@ class ArchitectTrackerGUI(tk.Toplevel):
         self.auto_size_tree()
         width = self.winfo_reqwidth()
         height = self.winfo_reqheight()
-        '''
-        #is this needed for VR?
+
+        #clamp to screen height
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         if height > screen_height:
             height = screen_height
-        '''
+
         self.geometry(f"{width}x{height}")
 
     def display_station(self):
@@ -509,6 +533,7 @@ class ArchitectTrackerGUI(tk.Toplevel):
 
     def on_close(self):
         globals.AT_BUTTON.set("Show Architect Tracker (tracking disabled)")
+        config.set("ArchTrack_geometry", self.geometry())
         self.destroy()  # Close the window
 
     def on_canvas_click(self, event):
@@ -598,6 +623,7 @@ class ArchitectTrackerGUI(tk.Toplevel):
     def toggle_column(self, column, is_visible: bool):
         self.column_visibility[column] = is_visible
         self.refresh_columns()
+        self.refresh()
 
     def toggle_hide_provided(self, val):
         self.hide_provided = val
