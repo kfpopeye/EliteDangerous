@@ -1,4 +1,4 @@
-__version__ = "1.7"
+__version__ = "1.8"
 
 """
 Displays commodities required, provided and needed when you land at a construction site,
@@ -22,6 +22,7 @@ from theme import theme
 from enum import Enum
 import traceback
 import semantic_version
+import requests
 
 from companion import CAPIData
 from config import appname, appversion, config
@@ -38,9 +39,26 @@ import helpers
 globals.ARCHITECT_TRACKER_VER = __version__
 
 def plugin_start3(plugin_dir):    
+    logger.info("Starting Architect Tracker plugin (%s)", globals.ARCHITECT_TRACKER_VER)
+    
     try:
-        logger.info("Starting Architect Tracker plugin (%s)", globals.ARCHITECT_TRACKER_VER)
+        response = requests.get(f"https://api.github.com/repos/kfpopeye/EliteDangerous/releases/latest", timeout=20)
 
+        if response.ok:
+            data = response.json()
+            s = data['tag_name']
+            s = s[1:] if s and not s[0].isnumeric() else s
+            logger.debug("Latest release: %s", s)
+            
+            if globals.ARCHITECT_TRACKER_VER != s:
+                globals.UPDATE_AVAILABLE = True 
+        else:
+            logger.error("Check for update failed!")            
+    except Exception as e:
+        logger.error("Unable to check for updates: %s", e)
+        logger.error("Traceback:\n%s", traceback.format_exc())
+        
+    try:
         # Up until 5.0.0-beta1 config.appversion is a string
         if isinstance(appversion, str):
             core_version = semantic_version.Version(appversion)
@@ -107,7 +125,11 @@ def plugin_app(parent: tk.Frame) -> tk.Frame:
     parent.bind_all('<KeyPress>', helpers.on_key_press)
 
     globals.EDMCframe = tk.Frame(parent)
-    tk.Button(globals.EDMCframe, textvariable=globals.AT_BUTTON, command=helpers.toggle_gui).pack(fill=tk.X, padx=5, pady=5)
+    tk.Button(globals.EDMCframe, textvariable=globals.AT_BUTTON, command=helpers.toggle_gui).grid(row=0, column=0, sticky="w")
+    updatelabel = tk.Label(globals.EDMCframe, text="An update is available!", foreground="yellow")
+    updatelabel.grid(row=1, column=0, sticky="e")
+    if not globals.UPDATE_AVAILABLE:
+        updatelabel.grid_remove()
 
     theme.update(globals.EDMCframe)
     return globals.EDMCframe
